@@ -1,5 +1,6 @@
 import collections
 import numpy as np
+import os
 import re
 
 def tokenize_string(sample):
@@ -24,7 +25,7 @@ class NgramLanguageModel(object):
     def ngrams(self):
         n = self._n
         for sample in self._samples:
-            for i in xrange(len(sample)-n+1):
+            for i in range(len(sample)-n+1):
                 yield sample[i:i+n]
 
     def unique_ngrams(self):
@@ -86,32 +87,34 @@ class NgramLanguageModel(object):
         return 0.5*(kl_p_m + kl_q_m) / np.log(2)
 
 def load_dataset(max_length, max_n_examples, tokenize=False, max_vocab_size=2048, data_dir='/home/ishaan/data/1-billion-word-language-modeling-benchmark-r13output'):
-    print "loading dataset..."
+    print("loading dataset...")
 
     lines = []
 
-    finished = False
+    #finished = False
+    # for i in range(99):
+    #     path = data_dir+("/training-monolingual.tokenized.shuffled/news.en-{}-of-00100".format(str(i+1).zfill(5)))
+    #     with open(path, 'r') as f:
+    #         for line in f:
+    #             line = line[:-1]
+    #             if tokenize:
+    #                 line = tokenize_string(line)
+    #             else:
+    #                 line = tuple(line)
+    #
+    #             if len(line) > max_length:
+    #                 line = line[:max_length]
+    #
+    #             lines.append(line + ( ("`",)*(max_length-len(line)) ) )
+    #
+    #             if len(lines) == max_n_examples:
+    #                 finished = True
+    #                 break
+    #     if finished:
+    #         break
 
-    for i in xrange(99):
-        path = data_dir+("/training-monolingual.tokenized.shuffled/news.en-{}-of-00100".format(str(i+1).zfill(5)))
-        with open(path, 'r') as f:
-            for line in f:
-                line = line[:-1]
-                if tokenize:
-                    line = tokenize_string(line)
-                else:
-                    line = tuple(line)
-
-                if len(line) > max_length:
-                    line = line[:max_length]
-
-                lines.append(line + ( ("`",)*(max_length-len(line)) ) )
-
-                if len(lines) == max_n_examples:
-                    finished = True
-                    break
-        if finished:
-            break
+    with open(os.path.join(data_dir, "train_data.txt"), "r") as f:
+        lines = [line.strip() + "." * (41 - len(line.strip())) for line in f.readlines()]
 
     np.random.shuffle(lines)
 
@@ -136,8 +139,8 @@ def load_dataset(max_length, max_n_examples, tokenize=False, max_vocab_size=2048
                 filtered_line.append('unk')
         filtered_lines.append(tuple(filtered_line))
 
-    for i in xrange(100):
-        print filtered_lines[i]
+    for i in range(100):
+        print(filtered_lines[i])
 
-    print "loaded {} lines in dataset".format(len(lines))
+    print("loaded {} lines in dataset".format(len(lines)))
     return filtered_lines, charmap, inv_charmap
